@@ -40,6 +40,7 @@ import {
 import {
   binEvents,
   defaultWalletTimeframe,
+  timeframeForSpan,
   PAD_BARS,
   walletActivity,
   walletReplayWindow,
@@ -326,11 +327,14 @@ export function WalletVideoModal({
   const effectiveRange: ReplayRangeKind = activity ? rangeKind : "token";
   const [timeframeChoice, setTimeframeChoice] = useState<ReplayTimeframe | null>(null);
   const defaultTimeframe = useMemo<ReplayTimeframe>(() => {
-    if (effectiveRange === "token" || !activity) return baseTimeframe;
-    const preferred = defaultWalletTimeframe(activity, data.generatedAt);
+    // Full history fits the token's own age, not the board chart's timeframe:
+    // a day-old token on a 1D board chart would replay two candles.
+    const preferred = effectiveRange === "token" || !activity
+      ? timeframeForSpan(tokenRange.to - tokenRange.from)
+      : defaultWalletTimeframe(activity, data.generatedAt);
     // Demo candles are hourly: they can be widened locally but not refined.
     return data.demo && TIMEFRAME_SECONDS[preferred] < TIMEFRAME_SECONDS[baseTimeframe] ? baseTimeframe : preferred;
-  }, [activity, baseTimeframe, data.demo, data.generatedAt, effectiveRange]);
+  }, [activity, baseTimeframe, data.demo, data.generatedAt, effectiveRange, tokenRange]);
   const timeframe = timeframeChoice ?? defaultTimeframe;
   const windowFor = useCallback(
     (kind: ReplayRangeKind, option: ReplayTimeframe): ReplayRange =>

@@ -72,7 +72,12 @@ export function activityUntil(activity: WalletActivity, now: number): number {
 
 /** Finest timeframe whose bar count for the wallet's span stays readable. */
 export function defaultWalletTimeframe(activity: WalletActivity, now: number): ReplayTimeframe {
-  const span = Math.max(activityUntil(activity, now) - activity.firstTs, 60);
+  return timeframeForSpan(activityUntil(activity, now) - activity.firstTs);
+}
+
+/** The finest timeframe that keeps a span within the replay's bar budget. */
+export function timeframeForSpan(seconds: number): ReplayTimeframe {
+  const span = Math.max(seconds, 60);
   return WALLET_TIMEFRAMES.find((timeframe) => span / TIMEFRAME_SECONDS[timeframe] <= TARGET_REPLAY_BARS) ?? "1D";
 }
 

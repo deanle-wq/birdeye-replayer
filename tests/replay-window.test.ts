@@ -93,3 +93,11 @@ test("sampled history widens to the Top Traders span; a full ledger does not", (
   assert.equal(sampled.firstTs, hints.firstTradeAt);
   assert.equal(sampled.lastTs, hints.lastTradeAt);
 });
+
+test("Full history candles follow the token's age, not the board chart", async () => {
+  const { timeframeForSpan } = await import("../src/lib/replay-window");
+  assert.equal(timeframeForSpan(1.4 * 86_400), "5m", "a day-and-a-half token gets hundreds of bars, not two daily candles");
+  assert.equal(timeframeForSpan(4 * 86_400), "15m");
+  assert.equal(timeframeForSpan(2 * 3_600), "1m");
+  assert.equal(timeframeForSpan(900 * 86_400), "1D", "very old tokens stop at daily candles");
+});

@@ -61,6 +61,27 @@ export function moveEdge(range: TimeRange, edge: "from" | "to", value: number, b
   return { from: range.from, to: Math.min(bounds.to, to) };
 }
 
+const PRESET_SECONDS: Partial<Record<RangePreset, number>> = { "24h": 86_400, "7d": 7 * 86_400, "30d": 30 * 86_400, launch: 86_400 };
+
+/**
+ * A "last N" or launch-day preset at least as long as the token's whole life
+ * only repeats Full history, so the picker turns it off.
+ */
+export function presetRepeatsFull(preset: RangePreset, bounds: TimeRange): boolean {
+  const seconds = PRESET_SECONDS[preset];
+  return seconds !== undefined && bounds.to - bounds.from <= seconds;
+}
+
+/** The preset a range reads as; when several give the same range, the one the user picked wins. */
+export function matchPreset(range: TimeRange, bounds: TimeRange, history: HistoryPoint[], picked?: RangePreset | null): RangePreset | undefined {
+  const same = (preset: RangePreset) => {
+    const candidate = presetRange(preset, bounds, history);
+    return candidate.from === range.from && candidate.to === range.to;
+  };
+  if (picked && same(picked)) return picked;
+  return RANGE_PRESETS.find((preset) => !presetRepeatsFull(preset, bounds) && same(preset));
+}
+
 export function presetRange(preset: RangePreset, bounds: TimeRange, history: HistoryPoint[]): TimeRange {
   const last = (seconds: number) => clampRange({ from: bounds.to - seconds, to: bounds.to }, bounds);
   switch (preset) {

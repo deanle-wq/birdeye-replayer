@@ -22,7 +22,7 @@ import { sameLookup } from "@/lib/lookup-state";
 import { drawChartFrame, drawMessage, type ChartAxis, type ChartScene, type ChartStyle } from "@/lib/chart-frame";
 import { barTime, compactUsd, cueSchedule, tagBursts, videoTimeline } from "@/lib/chart-scene";
 import { binTagEvents, DENSITY_LIMIT, LAYER_INFO, selectEvents, TAG_LAYERS, type Density, type TagEvent, type TagLayer } from "@/lib/chart-tags";
-import { autoTimeframe, formatMoment, formatSpan, fromInputValue, moveEdge, PRESET_LABEL, presetRange, RANGE_PRESETS, snapRange, targetCandles, timeframeAllowed, toInputValue, type TimeRange } from "@/lib/range";
+import { autoTimeframe, formatMoment, formatSpan, fromInputValue, matchPreset, moveEdge, PRESET_LABEL, presetRange, presetRepeatsFull, RANGE_PRESETS, snapRange, targetCandles, timeframeAllowed, toInputValue, type RangePreset, type TimeRange } from "@/lib/range";
 import { REPLAY_TIMEFRAMES, TIMEFRAME_SECONDS, type ReplayTimeframe } from "@/lib/replay-timeframe";
 import { loadTokenLogo } from "@/lib/token-logo";
 import { DEFAULT_SOUND, SOUND_PACK_LABELS, LiveCuePlayer, loadSamples, renderSoundtrack, type SoundSettings } from "@/lib/video-audio";
@@ -153,6 +153,8 @@ export function Studio() {
   const loadRequestRef = useRef(0);
   // Bumped by "Try again" so a failed candle or tag request runs once more.
   const [retryNonce, setRetryNonce] = useState(0);
+  // The preset last clicked: on a young token several presets give the same range.
+  const [pickedPreset, setPickedPreset] = useState<RangePreset | null>(null);
 
 
   useEffect(() => {
@@ -197,7 +199,9 @@ export function Studio() {
       setTimeframeChoice(null);
       setGenerated(null);
       const young = next.bounds.to - next.bounds.from < 8 * 86_400;
-      setRange(options.range ?? presetRange(young ? "full" : "7d", next.bounds, next.history));
+      const initial: RangePreset = young ? "full" : "7d";
+      setPickedPreset(options.range ? null : initial);
+      setRange(options.range ?? presetRange(initial, next.bounds, next.history));
       setDraft(null);
       playheadRef.current = 0;
       setPlayhead(0);
@@ -246,10 +250,7 @@ export function Studio() {
 
   // ── Window and candles ─────────────────────────────────────────────────
   const shownRange = draft ?? range;
-  const activePreset = chart && shownRange ? RANGE_PRESETS.find((preset) => {
-    const candidate = presetRange(preset, chart.bounds, chart.history);
-    return candidate.from === shownRange.from && candidate.to === shownRange.to;
-  }) : undefined;
+  const activePreset = chart && shownRange ? matchPreset(shownRange, chart.bounds, chart.history, pickedPreset) : undefined;
   const timeframe: ReplayTimeframe = range
     ? timeframeChoice && timeframeAllowed(range, timeframeChoice) ? timeframeChoice : autoTimeframe(range, targetCandles(clipSeconds))
     : "1H";
@@ -599,8 +600,9 @@ export function Studio() {
               <section className="setting-section period-section">
                 <div className="section-heading"><h2>Choose a period</h2></div>
                 <div className="period-presets" role="group" aria-label="Replay period presets">
-                  {RANGE_PRESETS.map((preset) => <Button key={preset} type="button" variant="outline" aria-pressed={activePreset === preset} disabled={busy} onClick={() => changeRange(presetRange(preset, chart.bounds, chart.history), true)}>{PRESET_LABEL[preset]}{activePreset === preset && <Check size={14} aria-hidden="true" />}</Button>)}
+                  {RANGE_PRESETS.map((preset) => <Button key={preset} type="button" variant="outline" aria-pressed={activePreset === preset} disabled={busy || presetRepeatsFull(preset, chart.bounds)} title={presetRepeatsFull(preset, chart.bounds) ? `This token has ${formatSpan(chart.bounds.to - chart.bounds.from)} of history, so this is the same as Full history` : undefined} onClick={() => { setPickedPreset(preset); changeRange(presetRange(preset, chart.bounds, chart.history), true); }}>{PRESET_LABEL[preset]}{activePreset === preset && <Check size={14} aria-hidden="true" />}</Button>)}
                 </div>
+                {RANGE_PRESETS.some((preset) => presetRepeatsFull(preset, chart.bounds)) && <p className="field-hint">This token has {formatSpan(chart.bounds.to - chart.bounds.from)} of history, so longer presets would only repeat Full history.</p>}
                 <div className="period-summary" role="status" aria-live="polite" aria-atomic="true">
                   <strong>{activePreset ? PRESET_LABEL[activePreset] : "Custom period"}<span>{formatSpan(shownRange!.to - shownRange!.from)} · UTC</span></strong>
                   <dl><div><dt>From</dt><dd>{formatMoment(shownRange!.from)}</dd></div><div><dt>To</dt><dd>{formatMoment(shownRange!.to)}</dd></div></dl>
