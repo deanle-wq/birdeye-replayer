@@ -1,0 +1,41 @@
+{
+  "name": "birdeye-replayer",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts",
+    "audit": "tsx scripts/audit-wallet.ts",
+    "backtest:wallet": "tsx scripts/backtest-wallet.ts",
+    "backtest:chart": "tsx scripts/backtest-chart.ts",
+    "icons:video": "node --import tsx scripts/generate-video-icons.mjs"
+  },
+  "dependencies": {
+    "@phosphor-icons/react": "^2.1.10",
+    "class-variance-authority": "^0.7.1",
+    "cn": "^0.4.0",
+    "mediabunny": "^1.61.0",
+    "next": "16.3.8",
+    "radix-ui": "^1.7.0",
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.14",
+    "@types/node": "^22.18.6",
+    "@types/react": "^19.1.16",
+    "@types/react-dom": "^19.1.9",
+    "eslint": "^9.36.0",
+    "eslint-config-next": "16.3.0",
+    "tailwindcss": "^4.1.14",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.2"
+  },
+  "engines": {
+    "node": ">=20.9.0"
+  }
+}

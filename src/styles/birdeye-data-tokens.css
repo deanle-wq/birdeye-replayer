@@ -1,0 +1,51 @@
+/* Birdeye Data New Website — Design Tokens
+   Source: Figma file J9bJBQAg4EV0FduWpEzZHI
+   Extracted: 2026-03-22
+*/
+
+:root {
+  /* ── Colors ── */
+  --color-white:          #FFFFFF;
+  --color-black:          #090B0C;
+  --color-black-pure:     #000000;
+
+  --color-gray-900:       #15181A;
+  --color-gray-800:       #252C30;
+  --color-gray-700:       #404B51;
+  --color-gray-600:       #57656E;
+  --color-gray-500:       #8696A0;
+  --color-gray-300:       #BBC5CA;
+  --color-gray-200:       #D7DDE0;
+  --color-gray-100:       #E3E7E9;
+
+  --color-green-primary:  #00FFA3;
+  --color-green-secondary:#00C076;
+  --color-green-accent:   #61D38A;
+  --color-green-dark:     #06754E;
+  --color-teal-deep:      #043E45;
+
+  /* ── Typography — Font Families ── */
+  --font-sans:  'Geist', sans-serif;
+  --font-mono:  'Geist Mono', monospace;
+  --font-inter: 'Inter', sans-serif;
+
+  /* ── Typography — Font Sizes ── */
+  --text-xs:   9px;
+  --text-sm:   12px;
+  --text-md:   14px;
+  --text-base: 15px;
+  --text-lg:   16px;
+  --text-xl:   20px;
+  --text-2xl:  32px;
+  --text-3xl:  48px;
+
+  /* ── Typography — Font Weights ── */
+  --font-regular:  400;
+  --font-medium:   500;
+  --font-semibold: 600;
+
+  /* ── Typography — Line Heights ── */
+  --leading-tight:   1.2;
+  --leading-normal:  1.35;
+  --leading-relaxed: 1.5;
+}
